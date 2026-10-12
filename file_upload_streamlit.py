@@ -6,17 +6,15 @@ data = st.file_uploader("upload file", type={"csv", "txt"})
 if data is not None:
     df = pd.read_csv(data)
     df = df[::-1].reset_index(drop=True)
-    df['time'] = df.index
+    df["time"] = df.index
 
     st.write(df)
-    st.write("열 이름:", df.columns.tolist())
-    st.write("데이터 타입:", df.dtypes)
 
-    if "Close" in df.columns:
-        df["Close"] = pd.to_numeric(
-            df["Close"].astype(str).str.replace(",", ""),
-            errors="coerce"
-        )
-        st.line_chart(df, x="time", y="Close")
+    # 숫자형 열 자동 탐색
+    numeric_cols = df.select_dtypes(include="number").columns.tolist()
+    numeric_cols = [col for col in numeric_cols if col != "time"]
+
+    if numeric_cols:
+        st.line_chart(df, x="time", y=numeric_cols)
     else:
-        st.error("CSV 파일에 Close 열이 없습니다.")
+        st.warning("그래프로 표시할 숫자 데이터가 없습니다.")
